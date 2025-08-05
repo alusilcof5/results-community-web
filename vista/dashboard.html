@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Analítico</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./css/layout.css">
+    <link rel="stylesheet" href="./css/directory.css">
+    <style>
+        .nav-link.active {
+            background: var(--ligth);
+            color: var(--primary);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card {
+            background: var(--ligth);
+            color: var(--primary);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 2rem 0;
+        }
+
+        .filter-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hero-gradient {
+            background: linear-gradient(90deg, #667eea, #baa6ce);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans">
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <img src="../assets/images/logo-dona.png" alt="Logo" class="logo-img">
+            </a>
+            <ul class="nav-menu">
+                <li><a href="./directory.html" class="nav-link">Directorio</a></li>
+                <li><a href="./dashboard.html" class="nav-link">Estudio</a></li>
+                <li><a href="./info.html" class="nav-link">Información</a></li>
+            </ul>
+        </div>
+    </nav>
+    <!-- Loading Screen -->
+    <div id="loading" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <p class="text-gray-600 text-lg">Cargando datos de la encuesta...</p>
+        </div>
+    </div>
+
+    <!-- Error Screen -->
+    <div id="error" class="fixed inset-0 bg-red-50 flex items-center justify-center z-50" style="display: none;">
+        <div class="text-center p-8">
+            <div class="text-red-500 text-6xl mb-4">⚠️</div>
+            <h2 class="text-2xl font-bold text-red-700 mb-2">Error al cargar los datos</h2>
+            <p id="error-message" class="text-red-600">No se pudo acceder al archivo 'output.json'. Verifique que esté
+                en la misma carpeta que este archivo.</p>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" style="display: none;">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-lg sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-2xl font-bold text-gray-800"></div>
+                    </div>
+                    <div class="hidden md:flex space-x-1">
+                        <button class="nav-link px-4 py-2 rounded-lg text-sm font-medium transition-colors active"
+                            onclick="showSection('intro')">Introducción</button>
+                        <button class="nav-link px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            onclick="showSection('demographics')">Perfil Sociodemográfico</button>
+                        <button class="nav-link px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            onclick="showSection('participation')">Participación</button>
+                        <button class="nav-link px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            onclick="showSection('inclusion')">Inclusión</button>
+                        <button class="nav-link px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            onclick="showSection('impact')">Impacto</button>
+                        <button class="nav-link px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            onclick="showSection('barriers')">Barreras</button>
+                        <button class="nav-link px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            onclick="showSection('data')">Datos</button>
+                    </div>
+                    <div class="md:hidden">
+                        <button id="mobile-menu-btn" class="text-gray-600 hover:text-gray-800">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden bg-white shadow-lg" style="display: none;">
+            <div class="px-4 py-2 space-y-1">
+                <button class="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium"
+                    onclick="showSection('intro'); toggleMobileMenu()">Introducción</button>
+                <button class="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium"
+                    onclick="showSection('demographics'); toggleMobileMenu()">Perfil Sociodemográfico</button>
+                <button class="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium"
+                    onclick="showSection('participation'); toggleMobileMenu()">Participación</button>
+                <button class="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium"
+                    onclick="showSection('inclusion'); toggleMobileMenu()">Inclusión</button>
+                <button class="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium"
+                    onclick="showSection('impact'); toggleMobileMenu()">Impacto</button>
+                <button class="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium"
+                    onclick="showSection('barriers'); toggleMobileMenu()">Barreras</button>
+                <button class="block w-full text-left px-4 py-2 rounded-lg text-sm font-medium"
+                    onclick="showSection('data'); toggleMobileMenu()">Datos</button>
+            </div>
+        </div>
+
+       
+
+        <!-- Stats Overview -->
+<div class="bg-white border-b" style="color: var(--primary)">
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <div id="stats-container" class="grid grid-cols-2 md:grid-cols-5 gap-4" style="color: var(--primary)">
+            <!-- Stats will be populated here -->
+        </div>
+    </div>
+</div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <div class="max-w-7xl mx-auto px-4 py-4">
+                <div class="flex flex-wrap gap-4 items-center justify-center">
+                    <div class="flex items-center space-x-2">
+                        <label class="text-white font-medium text-sm">Sector:</label>
+                        <select id="sector-filter" class="px-3 py-1 rounded-lg border-0 text-sm">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <label class="text-white font-medium text-sm">Experiencia:</label>
+                        <select id="experience-filter" class="px-3 py-1 rounded-lg border-0 text-sm">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <label class="text-white font-medium text-sm">Participación:</label>
+                        <select id="participation-filter" class="px-3 py-1 rounded-lg border-0 text-sm">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                    <button onclick="clearFilters()"
+                        class="bg-white text-pink-600 px-4 py-1 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors">
+                        Limpiar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 py-8">
+            <!-- Introduction Section -->
+            <section id="intro" class="section active">
+                <div class="hero-gradient text-white rounded-2xl p-8 mb-8">
+                    <div class="max-w-4xl mx-auto text-center">
+                        <h1 class="text-4xl md:text-5xl font-bold mb-6"> Análisis del impacto de las comunidades en Barcelona</h1>
+                        <div class="grid md:grid-cols-3 gap-6 text-center mb-[20px]">
+                            <div class="bg-white/10 rounded-xl p-6">
+                                <div class="flex justify-center items-center mb-2">
+                                    <img src="./dashboard/images/2.png" alt="icono" width="50" height="50">
+                                </div>
+                                <h3 class="font-semibold mb-2">Objetivo</h3>
+                                <p class="text-sm opacity-80">Evaluar el impacto de las comunidades de mujeres en
+                                    tecnología en Barcelona</p>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-6">
+                                <div class="flex justify-center items-center mb-2">
+                                    <img src="./dashboard/images/1.png" alt="icono" width="40" height="40">
+                                </div>
+                                <h3 class="font-semibold mb-2">Metodología</h3>
+                                <p class="text-sm opacity-80">Encuesta dirigida a profesionales del sector tecnológico
+                                </p>
+                            </div>
+
+                            <div class="bg-white/10 rounded-xl p-6">
+                                <div class="flex justify-center items-center mb-2">
+                                    <img src="./dashboard/images/3.png" alt="icono ODS" width="40" height="40">
+                                </div>
+                                <h3 class="font-semibold mb-2">ODS</h3>
+                                <p class="text-sm opacity-80">Contribución a los Objetivos de Desarrollo Sostenible</p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- Bloque 1: Contexto del Estudio -->
+                        <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
+                            <div class="flex justify-center items-center mb-4">
+                                <img src="./dashboard/images/10.png" alt="Contexto icono" width="80" height="80">
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Contexto del Estudio</h2>
+                            <p class="text-gray-600 mb-6">
+                                Este dashboard presenta los resultados de una encuesta realizada a profesionales del
+                                sector
+                                tecnológico en Barcelona,
+                                con el objetivo de analizar el impacto de las comunidades de mujeres en tecnología.
+                            </p>
+                            <p class="text-gray-600">
+                                Los datos recopilados nos permiten entender mejor cómo estas iniciativas contribuyen a
+                                la inclusión,
+                                el desarrollo profesional y la superación de barreras en el sector tecnológico.
+                            </p>
+                        </div>
+
+                        <!-- Bloque 2: Áreas de Análisis -->
+                        <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
+                            <div class="flex justify-center items-center mb-4">
+                                <img src="./dashboard/images/4.png" alt="Áreas de análisis icono" width="80" height="80">
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Áreas de Análisis</h2>
+                            <ul class="space-y-3 text-gray-600">
+                                <li class="flex items-center"><span
+                                        class="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>Perfil sociodemográfico de
+                                    las participantes</li>
+                                <li class="flex items-center"><span
+                                        class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>Niveles de participación
+                                    en comunidades</li>
+                                <li class="flex items-center"><span
+                                        class="w-2 h-2 bg-purple-500 rounded-full mr-3"></span>Impacto en la inclusión
+                                    tecnológica</li>
+                                <li class="flex items-center"><span
+                                        class="w-2 h-2 bg-pink-500 rounded-full mr-3"></span>Barreras superadas y
+                                    beneficios obtenidos</li>
+                                <li class="flex items-center"><span
+                                        class="w-2 h-2 bg-orange-500 rounded-full mr-3"></span>Contribución a los ODS
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+            </section>
+
+            <!-- Demographics Section -->
+            <section id="demographics" class="section">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4"><img src="./dashboard/images/11.png"
+                            alt="Icono perfil sociodemográfico" width="50" height="50">Perfil Sociodemográfico</h2>
+                    <p class="text-gray-600">Características demográficas y profesionales de las participantes</p>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-xl font-semibold mb-4">Distribución por Edad</h3>
+                        <div class="chart-container">
+                            <canvas id="age-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-xl font-semibold mb-4">Nivel Educativo</h3>
+                        <div class="chart-container">
+                            <canvas id="education-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-xl font-semibold mb-4">Experiencia en Tecnología</h3>
+                        <div class="chart-container">
+                            <canvas id="experience-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-xl font-semibold mb-4">Sector de Organización</h3>
+                        <div class="chart-container">
+                            <canvas id="sector-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Participation Section -->
+            <section id="participation" class="section">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4"><img src="./dashboard/images/5.png"
+                            alt="Icono perfil sociodemográfico" width="80" height="80"> Participación en Comunidades
+                    </h2>
+                    <p class="text-gray-600">Análisis de la participación activa en comunidades tecnológicas</p>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-xl font-semibold mb-4">Frecuencia de Participación</h3>
+                        <div class="chart-container">
+                            <canvas id="participation-frequency-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-xl font-semibold mb-4">Roles Desempeñados (Últimos 24 meses)</h3>
+                        <div class="chart-container">
+                            <canvas id="roles-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Inclusion Section -->
+            <section id="inclusion" class="section">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4"><img src="./dashboard/images/6.png"
+                            alt="Icono perfil sociodemográfico" width="80" height="80"> Inclusión en Entornos
+                        Tecnológicos</h2>
+                    <p class="text-gray-600">Evaluación del impacto en la inclusión y pertenencia</p>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-xl font-semibold mb-4">Impacto en Inclusión</h3>
+                        <div class="chart-container">
+                            <canvas id="inclusion-impact-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-xl font-semibold mb-4">Participación Activa vs Pasiva</h3>
+                        <div class="chart-container">
+                            <canvas id="active-participation-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Impact Section -->
+            <section id="impact" class="section">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4"><img src="./dashboard/images/7.png"
+                            alt="Icono perfil sociodemográfico" width="80" height="80"> Impacto de Iniciativas</h2>
+                    <p class="text-gray-600">Análisis del impacto de las iniciativas comunidad-empresa</p>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-xl font-semibold mb-4">Beneficios Obtenidos</h3>
+                        <div class="chart-container">
+                            <canvas id="benefits-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-xl font-semibold mb-4">Contribución a los ODS</h3>
+                        <div class="chart-container">
+                            <canvas id="ods-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Barriers Section -->
+            <section id="barriers" class="section">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4"><img src="./dashboard/images/8.png"
+                            alt="Icono perfil sociodemográfico" width="80" height="80"> Barreras Superadas</h2>
+                    <p class="text-gray-600">Análisis de las barreras que las comunidades han ayudado a superar</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4">Principales Barreras Superadas</h3>
+                    <div class="chart-container">
+                        <canvas id="barriers-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Section -->
+            <section id="data" class="section">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4"><img src="./dashboard/images/9.png"
+                            alt="Icono perfil sociodemográfico" width="80" height="80"> Datos Detallados</h2>
+                    <p class="text-gray-600">Exploración detallada de las respuestas individuales</p>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <div class="mb-4 flex justify-between items-center">
+                        <h3 class="text-xl font-semibold">Tabla de Respuestas</h3>
+                        <input type="text" id="search-input" placeholder="Buscar..."
+                            class="px-4 py-2 border rounded-lg">
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full table-auto">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-4 py-2 text-left">Edad</th>
+                                    <th class="px-4 py-2 text-left">Nacionalidad</th>
+                                    <th class="px-4 py-2 text-left">Educación</th>
+                                    <th class="px-4 py-2 text-left">Experiencia</th>
+                                    <th class="px-4 py-2 text-left">Participación</th>
+                                    <th class="px-4 py-2 text-left">Impacto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="data-table-body">
+                                <!-- Data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-8 mt-16">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Agradecimientos</h3>
+                        <p class="text-gray-300 text-sm">
+                            Gracias a todas las profesionales que participaron en esta encuesta,
+                            contribuyendo con sus experiencias y perspectivas.
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Sobre el Proyecto</h3>
+                        <p class="text-gray-300 text-sm">
+                            Este dashboard forma parte de un trabajo académico que analiza
+                            el impacto de las comunidades de mujeres en tecnología.
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Contacto</h3>
+                        <p class="text-gray-300 text-sm">
+                            Para más información sobre este estudio o para colaboraciones futuras,
+                            no dudes en contactarnos.
+                        </p>
+                    </div>
+                </div>
+                <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400 text-sm">
+                    <p>&copy; 2025. Todos los derechos reservados.</p>
+                </div>
+        </footer>
+    </div>
+
+    <script>
+        // Global variables
+        let allData = [];
+        let filteredData = [];
+        let charts = {};
+
+        // Utility functions
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Data transformation function
+        function transformDataItem(item) {
+            return {
+                // Datos básicos
+                age: item.Edad,
+                nationality: item.Nacionalidad,
+                education_level: item.Nivel_Educativo,
+                tech_experience_years: item.Años_Experiencia_Tech,
+                city: item.Ciudad_Residencia,
+                employment_status: item.Situacion_Laboral,
+                salary_range: item.Salario_Anual_Aproximado,
+
+                // Información de organización
+                organization_type: item.Tipo_Organizacion,
+                organization_sector: item.Sector_Organizacion,
+
+                // Participación en comunidad
+                community_participation_frequency: item.Frecuencia_Participacion_Comunidad,
+                community_inclusion_impact: item.Contribucion_Inclusion_Comunidad,
+                main_participation_form: item.Forma_Principal_Participacion,
+                community_name: item.Nombre_Comunidad,
+                community_structure: item.Estructura_Organizativa_Comunidad,
+                event_frequency: item.Frecuencia_Eventos_Comunidad,
+
+                // Impacto y beneficios
+                networking_expansion: item.Expansion_Red_Profesional,
+                job_opportunities_access: item.Acceso_Oportunidades_Laborales === "True",
+                job_opportunity_type: item.Tipo_Oportunidades_Laborales,
+                community_influence_staying: item.Influencia_Comunidad_Continuidad_Sector === "True",
+                how_community_encouraged: item.Como_Comunidad_Animo_Quedarse,
+
+                // Información booleana
+                resides_in_barcelona: item.Residencia_Barcelona === "True",
+                identifies_as_woman: item.Identidad_Mujer === "True",
+                works_in_tech_3_years: item.Trabajo_Sector_Tech_3Años === "True",
+                is_community_member: item.Miembro_Comunidad_Tech_Mujeres === "True",
+                increased_women_in_teams: item.Aumento_Mujeres_Equipos_Tech === "True",
+                participated_company_initiatives: item.Participacion_Iniciativas_Empresas === "True",
+                company_initiatives_help_inclusion: item.Iniciativas_Empresas_Inclusion_Laboral === "True",
+                has_dependents: item.Personas_a_Cargo === "True",
+
+                // Estado de membresía activa
+                active_in_women_tech_community: item.Miembro_Comunidad_Tech_Mujeres === "True" ? "Sí, soy miembro activa" : "No",
+
+                // Arrays parseados
+                tech_leadership_roles: parseArrayField(item.Rol_Tech_Liderazgo),
+                effective_equity_activities: parseArrayField(item.Actividades_Efectivas_Equidad),
+                barriers_helped_with: parseArrayField(item.Barreras_Superadas_Comunidad),
+
+                // Campos de texto
+                future_inclusion_actions: item.Acciones_Futuras_Inclusion,
+                company_collaboration_suggestions: item.Sugerencias_Empresas_Colaboracion,
+
+                // ODS contribution
+                ods_contribution: item.Contribucion_ODS5_Igualdad_Genero === "Sí" ?
+                    ["ODS 5: Igualdad de género - Contribución completa"] :
+                    item.Contribucion_ODS5_Igualdad_Genero === "En parte" ?
+                        ["ODS 5: Igualdad de género - Contribución parcial"] :
+                        ["Sin contribución identificada"],
+
+                // Timestamp
+                timestamp: item.Timestamp,
+
+                // Campos legacy para compatibilidad con gráficos existentes
+                roles_last_24_months: parseArrayField(item.Rol_Tech_Liderazgo),
+                benefits_obtained: parseArrayField(item.Actividades_Efectivas_Equidad)
+            };
+        }
+
+        function parseArrayField(field) {
+            if (!field || field === "" || field === "N/A") return [];
+            return field.split(',').map(item => item.trim()).filter(item => item !== "");
+        }
+
+        // Load and process data
+        async function loadData() {
+            try {
+                const response = await fetch('../model/output.json');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const rawData = await response.json();
+
+                // Transform data to match expected format
+                allData = rawData.map(item => transformDataItem(item));
+                filteredData = [...allData];
+
+                console.log('Datos cargados:', allData.length, 'registros');
+                console.log('Muestra de datos transformados:', allData[0]);
+
+                hideLoading();
+                showApp();
+                generateStats();
+                generateAllCharts();
+                populateFilters();
+                generateDataTable();
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError();
+            }
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showError() {
+            document.getElementById('error').style.display = 'flex';
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showApp() {
+            document.getElementById('app').style.display = 'block';
+        }
+
+        function generateStats() {
+            const validResponses = filteredData.length;
+            const avgAge = validResponses > 0 ?
+                Math.round(filteredData.reduce((sum, item) => sum + (item.age || 0), 0) / validResponses) : 0;
+            const barcelonaResidents = filteredData.filter(item => item.resides_in_barcelona === true).length;
+            const activeMembers = filteredData.filter(item => item.is_community_member === true).length;
+            const positiveImpact = filteredData.filter(item =>
+                item.community_inclusion_impact === "Sí" ||
+                item.community_inclusion_impact === "Sí, en parte" ||
+                item.community_inclusion_impact === "En parte"
+            ).length;
+
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.innerHTML = `
+        <div class="stat-card p-6 rounded-xl text-center">
+            <div class="text-3xl font-bold">${validResponses}</div>
+            <div class="text-sm opacity-90">Respuestas Válidas</div>
+        </div>
+        <div class="stat-card p-6 rounded-xl text-center">
+            <div class="text-3xl font-bold">${avgAge}</div>
+            <div class="text-sm opacity-90">Edad Promedio</div>
+        </div>
+        <div class="stat-card  p-6 rounded-xl text-center">
+            <div class="text-3xl font-bold">${Math.round((barcelonaResidents / validResponses) * 100)}%</div>
+            <div class="text-sm opacity-90">Residen en Barcelona</div>
+        </div>
+        <div class="stat-card p-6 rounded-xl text-center">
+            <div class="text-3xl font-bold">${Math.round((activeMembers / validResponses) * 100)}%</div>
+            <div class="text-sm opacity-90">Miembros Activos</div>
+        </div>
+        <div class="stat-card p-6 rounded-xl text-center">
+            <div class="text-3xl font-bold">${Math.round((positiveImpact / validResponses) * 100)}%</div>
+            <div class="text-sm opacity-90">Con Impacto Positivo</div>
+        </div>
+    `;
+        }
+
+        function generateAllCharts() {
+            generateAgeChart();
+            generateEducationChart();
+            generateExperienceChart();
+            generateSectorChart();
+            generateParticipationFrequencyChart();
+            generateRolesChart();
+            generateInclusionImpactChart();
+            generateActiveParticipationChart();
+            generateBenefitsChart();
+            generateODSChart();
+            generateBarriersChart();
+        }
+
+        function generateAgeChart() {
+            const ageGroups = {};
+            filteredData.forEach(item => {
+                if (item.age && item.age > 0) {
+                    const ageGroup = Math.floor(item.age / 5) * 5;
+                    const label = `${ageGroup}-${ageGroup + 4}`;
+                    ageGroups[label] = (ageGroups[label] || 0) + 1;
+                }
+            });
+
+            createChart('age-chart', 'bar', ageGroups, 'Distribución por Edad');
+        }
+
+        function generateEducationChart() {
+            const education = {};
+            filteredData.forEach(item => {
+                if (item.education_level) {
+                    education[item.education_level] = (education[item.education_level] || 0) + 1;
+                }
+            });
+
+            createChart('education-chart', 'doughnut', education, 'Nivel Educativo');
+        }
+
+        function generateExperienceChart() {
+            const experience = {};
+            filteredData.forEach(item => {
+                if (item.tech_experience_years) {
+                    experience[item.tech_experience_years] = (experience[item.tech_experience_years] || 0) + 1;
+                }
+            });
+
+            createChart('experience-chart', 'bar', experience, 'Años de Experiencia');
+        }
+
+        function generateSectorChart() {
+            const sectors = {};
+            filteredData.forEach(item => {
+                if (item.organization_sector) {
+                    sectors[item.organization_sector] = (sectors[item.organization_sector] || 0) + 1;
+                }
+            });
+
+            createChart('sector-chart', 'pie', sectors, 'Sector de Organización');
+        }
+
+        function generateParticipationFrequencyChart() {
+            const participation = {};
+            filteredData.forEach(item => {
+                if (item.community_participation_frequency) {
+                    participation[item.community_participation_frequency] = (participation[item.community_participation_frequency] || 0) + 1;
+                }
+            });
+
+            createChart('participation-frequency-chart', 'doughnut', participation, 'Frecuencia de Participación');
+        }
+
+        function generateRolesChart() {
+            const roles = {};
+            filteredData.forEach(item => {
+                if (item.tech_leadership_roles && Array.isArray(item.tech_leadership_roles)) {
+                    item.tech_leadership_roles.forEach(role => {
+                        if (role && role.trim() !== '') {
+                            roles[role] = (roles[role] || 0) + 1;
+                        }
+                    });
+                }
+            });
+
+            createChart('roles-chart', 'horizontalBar', roles, 'Roles Técnicos Desempeñados');
+        }
+
+        function generateInclusionImpactChart() {
+            const impact = {};
+            filteredData.forEach(item => {
+                if (item.community_inclusion_impact) {
+                    impact[item.community_inclusion_impact] = (impact[item.community_inclusion_impact] || 0) + 1;
+                }
+            });
+
+            createChart('inclusion-impact-chart', 'pie', impact, 'Impacto en Inclusión');
+        }
+
+        function generateActiveParticipationChart() {
+            const activeParticipation = {};
+            filteredData.forEach(item => {
+                const status = item.is_community_member ? "Miembro activo" : "No es miembro activo";
+                activeParticipation[status] = (activeParticipation[status] || 0) + 1;
+            });
+
+            createChart('active-participation-chart', 'doughnut', activeParticipation, 'Participación Activa');
+        }
+
+        function generateBenefitsChart() {
+            const benefits = {};
+            filteredData.forEach(item => {
+                if (item.effective_equity_activities && Array.isArray(item.effective_equity_activities)) {
+                    item.effective_equity_activities.forEach(benefit => {
+                        if (benefit && benefit.trim() !== '') {
+                            benefits[benefit] = (benefits[benefit] || 0) + 1;
+                        }
+                    });
+                }
+            });
+
+            createChart('benefits-chart', 'horizontalBar', benefits, 'Actividades Efectivas para Equidad');
+        }
+
+        function generateODSChart() {
+            const ods = {};
+            filteredData.forEach(item => {
+                if (item.ods_contribution && Array.isArray(item.ods_contribution)) {
+                    item.ods_contribution.forEach(objective => {
+                        if (objective && objective.trim() !== '') {
+                            ods[objective] = (ods[objective] || 0) + 1;
+                        }
+                    });
+                }
+            });
+
+            createChart('ods-chart', 'bar', ods, 'Contribución a ODS');
+        }
+
+        function generateBarriersChart() {
+            const barriers = {};
+            filteredData.forEach(item => {
+                if (item.barriers_helped_with && Array.isArray(item.barriers_helped_with)) {
+                    item.barriers_helped_with.forEach(barrier => {
+                        if (barrier && barrier.trim() !== '') {
+                            barriers[barrier] = (barriers[barrier] || 0) + 1;
+                        }
+                    });
+                }
+            });
+
+            createChart('barriers-chart', 'horizontalBar', barriers, 'Barreras Superadas');
+        }
+
+        function createChart(canvasId, type, data, title) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) {
+                console.warn(`Canvas with id ${canvasId} not found`);
+                return;
+            }
+
+            // Destroy existing chart if it exists
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+
+            // Filter out empty data
+            const filteredData = Object.entries(data).filter(([key, value]) => key && key.trim() !== '' && value > 0);
+
+            if (filteredData.length === 0) {
+                console.warn(`No data available for chart ${canvasId}`);
+                return;
+            }
+
+            const sortedData = filteredData.sort(([, a], [, b]) => b - a);
+            const labels = sortedData.map(([label]) => label);
+            const values = sortedData.map(([, value]) => value);
+
+            const colors = [
+                '#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe',
+                '#00f2fe', '#43e97b', '#38f9d7', '#ffecd2', '#fcb69f',
+                '#a8edea', '#fed6e3', '#d299c2', '#fef9d7', '#c471ed',
+                '#ff9a9e', '#fecfef', '#fecfef', '#667eea', '#764ba2'
+            ];
+
+            const config = {
+                type: type === 'horizontalBar' ? 'bar' : type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: title,
+                        data: values,
+                        backgroundColor: type === 'pie' || type === 'doughnut' ?
+                            colors.slice(0, labels.length) : colors[0],
+                        borderColor: type === 'pie' || type === 'doughnut' ?
+                            colors.slice(0, labels.length) : colors[1],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: type === 'horizontalBar' ? 'y' : 'x',
+                    plugins: {
+                        legend: {
+                            display: type === 'pie' || type === 'doughnut',
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const value = context.parsed.y || context.parsed;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: type === 'pie' || type === 'doughnut' ? {} : {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 0
+                            }
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            };
+
+            try {
+                charts[canvasId] = new Chart(ctx, config);
+            } catch (error) {
+                console.error(`Error creating chart ${canvasId}:`, error);
+            }
+        }
+
+        function populateFilters() {
+            const sectorFilter = document.getElementById('sector-filter');
+            const experienceFilter = document.getElementById('experience-filter');
+            const participationFilter = document.getElementById('participation-filter');
+
+            if (!sectorFilter || !experienceFilter || !participationFilter) {
+                console.warn('Filter elements not found');
+                return;
+            }
+
+            const sectors = new Set();
+            const experiences = new Set();
+            const participations = new Set();
+
+            allData.forEach(item => {
+                if (item.organization_sector) sectors.add(item.organization_sector);
+                if (item.tech_experience_years) experiences.add(item.tech_experience_years);
+                if (item.community_participation_frequency) participations.add(item.community_participation_frequency);
+            });
+
+            // Clear existing options
+            sectorFilter.innerHTML = '<option value="">Todos</option>';
+            experienceFilter.innerHTML = '<option value="">Todas</option>';
+            participationFilter.innerHTML = '<option value="">Todas</option>';
+
+            // Populate filters
+            [...sectors].sort().forEach(sector => {
+                const option = document.createElement('option');
+                option.value = sector;
+                option.textContent = sector;
+                sectorFilter.appendChild(option);
+            });
+
+            [...experiences].sort().forEach(exp => {
+                const option = document.createElement('option');
+                option.value = exp;
+                option.textContent = exp;
+                experienceFilter.appendChild(option);
+            });
+
+            [...participations].sort().forEach(part => {
+                const option = document.createElement('option');
+                option.value = part;
+                option.textContent = part;
+                participationFilter.appendChild(option);
+            });
+
+            // Add event listeners
+            sectorFilter.addEventListener('change', applyFilters);
+            experienceFilter.addEventListener('change', applyFilters);
+            participationFilter.addEventListener('change', applyFilters);
+        }
+
+        function applyFilters() {
+            const selectedSector = document.getElementById('sector-filter')?.value;
+            const selectedExperience = document.getElementById('experience-filter')?.value;
+            const selectedParticipation = document.getElementById('participation-filter')?.value;
+
+            filteredData = allData.filter(item => {
+                const matchesSector = !selectedSector || item.organization_sector === selectedSector;
+                const matchesExperience = !selectedExperience || item.tech_experience_years === selectedExperience;
+                const matchesParticipation = !selectedParticipation || item.community_participation_frequency === selectedParticipation;
+                return matchesSector && matchesExperience && matchesParticipation;
+            });
+
+            console.log('Filtros aplicados. Registros filtrados:', filteredData.length);
+            generateStats();
+            generateAllCharts();
+            generateDataTable();
+        }
+
+        function clearFilters() {
+            const sectorFilter = document.getElementById('sector-filter');
+            const experienceFilter = document.getElementById('experience-filter');
+            const participationFilter = document.getElementById('participation-filter');
+
+            if (sectorFilter) sectorFilter.value = '';
+            if (experienceFilter) experienceFilter.value = '';
+            if (participationFilter) participationFilter.value = '';
+
+            filteredData = [...allData];
+            generateStats();
+            generateAllCharts();
+            generateDataTable();
+        }
+
+        function generateDataTable() {
+            const tableBody = document.getElementById('data-table-body');
+            if (!tableBody) {
+                console.warn('Table body element not found');
+                return;
+            }
+
+            tableBody.innerHTML = '';
+
+            const displayLimit = 100;
+            const dataToDisplay = filteredData.slice(0, displayLimit);
+
+            dataToDisplay.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.className = 'border-b hover:bg-gray-50';
+                row.innerHTML = `
+            <td class="px-4 py-2">${item.age || 'N/A'}</td>
+            <td class="px-4 py-2">${item.nationality || 'N/A'}</td>
+            <td class="px-4 py-2">${item.education_level || 'N/A'}</td>
+            <td class="px-4 py-2">${item.tech_experience_years || 'N/A'}</td>
+            <td class="px-4 py-2">${item.city || 'N/A'}</td>
+            <td class="px-4 py-2">${item.employment_status || 'N/A'}</td>
+        `;
+                tableBody.appendChild(row);
+            });
+
+            // Add info about limited display
+            if (filteredData.length > displayLimit) {
+                const infoRow = document.createElement('tr');
+                infoRow.innerHTML = `
+            <td colspan="6" class="px-4 py-2 text-center text-gray-500 italic">
+                Mostrando ${displayLimit} de ${filteredData.length} registros
+            </td>
+        `;
+                tableBody.appendChild(infoRow);
+            }
+        }
+
+        function setupSearchFunction() {
+            const searchInput = document.getElementById('search-input');
+            if (!searchInput) {
+                console.warn('Search input element not found');
+                return;
+            }
+
+            searchInput.addEventListener('input', function () {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#data-table-body tr');
+
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            });
+        }
+
+        // Sample data fallback for demo purposes
+        const sampleData = [
+            {
+                age: 42,
+                nationality: "Uruguaya",
+                education_level: "Máster",
+                tech_experience_years: "1-3 años",
+                community_participation_frequency: "4-10 veces/año",
+                community_inclusion_impact: "Sí, en parte",
+                organization_sector: "Educación",
+                tech_leadership_roles: ["Frontend Developer", "Backend Developer", "Data Analyst"],
+                is_community_member: true,
+                effective_equity_activities: ["Eventos de networking"],
+                barriers_helped_with: ["Falta de mentoría", "Redes profesionales limitadas", "Barreras culturales"],
+                ods_contribution: ["ODS 5: Igualdad de género - Contribución parcial"],
+                resides_in_barcelona: true,
+                identifies_as_woman: true,
+                city: "Barcelona",
+                employment_status: "Estudiante",
+                salary_range: "<20000",
+                organization_type: "ONG / Fundación"
+            }
+        ];
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM loaded, initializing dashboard...');
+
+            loadData();
+            setupSearchFunction();
+
+            // Mobile menu toggle
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+            }
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function (event) {
+                const mobileMenu = document.getElementById('mobile-menu');
+                const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+
+                if (mobileMenu && mobileMenuBtn &&
+                    !mobileMenu.contains(event.target) &&
+                    !mobileMenuBtn.contains(event.target)) {
+                    mobileMenu.style.display = 'none';
+                }
+            });
+        });
+
+        // Use sample data if real data fails to load
+        window.addEventListener('load', function () {
+            setTimeout(() => {
+                if (!allData.length) {
+                    console.log('Using sample data for demo');
+                    allData = sampleData;
+                    filteredData = [...allData];
+                    hideLoading();
+                    showApp();
+                    generateStats();
+                    generateAllCharts();
+                    populateFilters();
+                    generateDataTable();
+                }
+            }, 5000); // Increased timeout to 5 seconds
+        });
+    </script>
+</body>
+
+</html>

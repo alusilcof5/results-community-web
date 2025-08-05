@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mujeres en Tecnología Barcelona - Estudio Exploratorio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Papaparse ya no es necesario para cargar el CSV directamente en el navegador,
+         ya que Python generará un JSON que JavaScript leerá. -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.4.1/papaparse.min.js"></script> -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/study.css">
+    <link rel="stylesheet" href="../css/directory.css">
+    <link rel="stylesheet" href="../css/layout.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <img src="../assets/images/logo-dona.png" alt="Logo" class="logo-img">
+            </a>
+            <ul class="nav-menu">
+                <li><a href="./directory.html" class="nav-link">Directorio</a></li>
+                <li><a href="./study.html" class="nav-link">Estudio</a></li>
+                <li><a href="./info.html" class="nav-link">Información</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header class="headerpro">
+            
+            <h1>Mujeres en Comunidades Tecnológicas</h1>
+            <p>Estudio Exploratorio sobre la Participación y el Impacto de las Comunidades Profesionales de Mujeres en
+                Tecnología en Barcelona</p>
+                <br>
+        </header>
+
+        <div class="stats-grid animate-in">
+            <div class="stat-card">
+                <div class="stat-number" id="total-responses">Cargando...</div>
+                <div class="stat-label">Respuestas Totales</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="active-members">Cargando...</div>
+                <div class="stat-label">Miembros Activos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avg-age">Cargando...</div>
+                <div class="stat-label">Edad Promedio</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="inclusion-impact">Cargando...</div>
+                <div class="stat-label">Sienten Mayor Inclusión</div>
+            </div>
+        </div>
+
+        <div class="filter-container animate-in">
+            <div class="filter-item">
+                <label for="role-filter">Filtrar por Rol:</label>
+                <select id="role-filter">
+                    <option value="all">Todos los roles</option>
+                    <!-- Las opciones se pueden generar dinámicamente si se desea,
+                         pero para este ejemplo, se asumen roles comunes.
+                         Para un filtrado real, necesitarías los datos brutos en JS o más JSONs. -->
+                    <option value="Frontend Developer">Frontend Developer</option>
+                    <option value="Backend Developer">Backend Developer</option>
+                    <option value="Data Analyst">Data Analyst</option>
+                    <option value="UX/UI Designer">UX/UI Designer</option>
+                    <option value="Fullstack Developer">Fullstack Developer</option>
+                    <option value="Project/Product Manager Tech">Project/Product Manager Tech</option>
+                    <option value="Tech Lead / CTO / Directiva en tecnología">Tech Lead / CTO / Directiva</option>
+                    <option value="Developer Advocate">Developer Advocate</option>
+                    <option value="QA Funcional">QA Funcional</option>
+                    <option value="Docente">Docente</option>
+                    <option value="Data Scientist/ Data Engineer">Data Scientist/ Data Engineer</option>
+                    <option value="Process engineer & Project Manager">Process Engineer & Project Manager</option>
+                    <option value="Atención a cliente">Atención a cliente</option>
+                    <option value="psicóloga">Psicóloga</option>
+                    <option value="Administracion">Administración</option>
+                    <option value="Estudiante de Fullstack">Estudiante de Fullstack</option>
+                    <option value="bootcamp full-stack">Bootcamp Full-stack</option>
+                    <option value="Trabajado en el sector, pero como customer service">Customer Service (Tech)</option>
+                    <option value="Ninguno aún">Ninguno aún</option>
+                    <option value="None">None</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label for="experience-filter">Filtrar por Experiencia:</label>
+                <select id="experience-filter">
+                    <option value="all">Toda la experiencia</option>
+                    <option value="Menor a 1 año">Menor a 1 año</option>
+                    <option value="De 1 a 3 años">De 1 a 3 años</option>
+                    <option value="entre 4 y 7 años">4 a 7 años</option>
+                    <option value="Mayor a 7 años">Mayor a 7 años</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container animate-in">
+                <h3 class="chart-title">Distribución de Roles Técnicos</h3>
+                <div class="chart-wrapper">
+                    <canvas id="rolesChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container animate-in">
+                <h3 class="chart-title">Nivel de Participación en Comunidades</h3>
+                <div class="chart-wrapper">
+                    <canvas id="participationChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container animate-in">
+                <h3 class="chart-title">Impacto en Sentido de Pertenencia</h3>
+                <div class="chart-wrapper">
+                    <canvas id="belongingChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container animate-in">
+                <h3 class="chart-title">Distribución por Edad</h3>
+                <div class="chart-wrapper">
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container full-width animate-in">
+                <h3 class="chart-title">Barreras Identificadas en el Sector Tecnológico</h3>
+                <div class="chart-wrapper">
+                    <canvas id="barriersChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container full-width animate-in">
+                <h3 class="chart-title">Acciones Más Efectivas para Promover Equidad de Género</h3>
+                <div class="chart-wrapper">
+                    <canvas id="actionsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container animate-in">
+                <h3 class="chart-title">Expansión de Red Profesional</h3>
+                <div class="chart-wrapper">
+                    <canvas id="networkChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container animate-in">
+                <h3 class="chart-title">Influencia en Continuidad en el Sector</h3>
+                <div class="chart-wrapper">
+                    <canvas id="continuityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="insights-section animate-in">
+            <h2 class="insights-title">Hallazgos Clave</h2>
+
+            <div class="insight-card">
+                <h3>Alto Nivel de Participación Activa</h3>
+                <p>El <span class="highlight">75% de las encuestadas</span> son miembros activos de comunidades
+                    profesionales, con una participación regular que demuestra el valor percibido de estos espacios.</p>
+            </div>
+
+            <div class="insight-card">
+                <h3>Impacto Significativo en la Inclusión</h3>
+                <p>El <span class="highlight">83% reporta</span> que la participación en comunidades ha contribuido a su
+                    sentido de pertenencia en equipos tecnológicos, siendo este uno de los beneficios más valorados.</p>
+            </div>
+
+            <div class="insight-card">
+                <h3>Diversidad de Roles y Experiencia</h3>
+                <p>La muestra incluye desde desarrolladoras full-stack hasta analistas de datos y diseñadoras UX/UI, con
+                    una <span class="highlight">edad promedio de 39 años</span> y diversos niveles de experiencia.</p>
+            </div>
+
+            <div class="insight-card">
+                <h3>Principales Barreras Identificadas</h3>
+                <p>Las <span class="highlight">redes profesionales limitadas y los sesgos de género</span> emergen como
+                    las principales barreras, seguidas por la falta de mentoría y las barreras culturales.</p>
+            </div>
+
+            <div class="insight-card">
+                <h3>Estrategias Más Efectivas</h3>
+                <p>Los <span class="highlight">eventos de networking, programas de mentoría y espacios seguros de
+                        apoyo</span> son identificados como las acciones más efectivas para promover la equidad de
+                    género.</p>
+            </div>
+
+            <div class="insight-card">
+                <h3>Impacto en Oportunidades Laborales</h3>
+                <p>Un <span class="highlight">40% ha accedido a nuevas oportunidades laborales</span> a través de las
+                    redes profesionales desarrolladas en estas comunidades.</p>
+            </div>
+        </div>
+
+        <div class="methodology animate-in">
+            <h2>Metodología del Estudio</h2>
+            <p><strong>Muestra:</strong> 48 mujeres profesionales del sector tecnológico en Barcelona y área
+                metropolitana</p>
+            <p><strong>Periodo:</strong> Julio-Agosto 2025</p>
+            <p><strong>Método:</strong> Encuesta online con preguntas mixtas (cuantitativas y cualitativas)</p>
+            <p><strong>Criterios de inclusión:</strong> Mujeres que trabajan o han trabajado en tecnología en los
+                últimos 3 años, residentes en Barcelona o área metropolitana</p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-left">
+                </div>
+                <div class="footer-right">
+                    <div class="social-links">
+                        <a href="https://www.linkedin.com/in/ana-lucia-silva-cordoba/"><i
+                                class="fab fa-linkedin fa-2x"></i></a>
+                        <a href="https://github.com/alusilcof5"><i class="fab fa-github fa-2x"></i></a>
+                    </div>
+
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Ana Silva Córdoba — Proyecto de Fin de Máster. Todos los derechos reservados.</p>            </div>
+        </div>
+    </footer>
+
+    <!-- El script de datos ahora cargará el JSON generado por Python -->
+    <!-- Asegúrate de que la ruta a data_for_charts.json sea correcta desde la ubicación de study.html -->
+    <script src="../data_for_charts.json" type="application/json" id="chart-data"></script>
+    <!-- Asegúrate de que la ruta a study_charts.js sea correcta desde la ubicación de study.html -->
+    <script src="../js/study_charts.js" defer></script>
+</body>
+
+</html>
