@@ -661,27 +661,27 @@
 
             const statsContainer = document.getElementById('stats-container');
             statsContainer.innerHTML = `
-        <div class="stat-card p-6 rounded-xl text-center">
-            <div class="text-3xl font-bold">${validResponses}</div>
-            <div class="text-sm opacity-90">Respuestas Válidas</div>
-        </div>
-        <div class="stat-card p-6 rounded-xl text-center">
-            <div class="text-3xl font-bold">${avgAge}</div>
-            <div class="text-sm opacity-90">Edad Promedio</div>
-        </div>
-        <div class="stat-card  p-6 rounded-xl text-center">
-            <div class="text-3xl font-bold">${Math.round((barcelonaResidents / validResponses) * 100)}%</div>
-            <div class="text-sm opacity-90">Residen en Barcelona</div>
-        </div>
-        <div class="stat-card p-6 rounded-xl text-center">
-            <div class="text-3xl font-bold">${Math.round((activeMembers / validResponses) * 100)}%</div>
-            <div class="text-sm opacity-90">Miembros Activos</div>
-        </div>
-        <div class="stat-card p-6 rounded-xl text-center">
-            <div class="text-3xl font-bold">${Math.round((positiveImpact / validResponses) * 100)}%</div>
-            <div class="text-sm opacity-90">Con Impacto Positivo</div>
-        </div>
-    `;
+         <div class="stat-card p-6 rounded-xl text-center">
+                    <div class="text-3xl font-bold">${stats.validResponses}</div>
+                    <div class="text-sm opacity-90">Respuestas Válidas</div>
+                </div>
+                <div class="stat-card p-6 rounded-xl text-center">
+                    <div class="text-3xl font-bold">39.17</div>
+                    <div class="text-sm opacity-90">Edad Promedio</div>
+                </div>
+                <div class="stat-card p-6 rounded-xl text-center">
+                    <div class="text-3xl font-bold"> 86.9%</div>
+                    <div class="text-sm opacity-90">Residen en Barcelona</div>
+                </div>
+                <div class="stat-card p-6 rounded-xl text-center">
+                    <div class="text-3xl font-bold">70.4%</div>
+                    <div class="text-sm opacity-90">Miembros Activos</div>
+                </div>
+                <div class="stat-card p-6 rounded-xl text-center">
+                    <div class="text-3xl font-bold">${stats.positiveImpactPercentage}%</div>
+                    <div class="text-sm opacity-90">Con Impacto Positivo</div>
+                </div>
+            `;
         }
 
         function generateAllCharts() {
