@@ -7,9 +7,12 @@
     <title>Dashboard Analítico</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="./css/layout.css">
-    <link rel="stylesheet" href="./css/directory.css">
     <style>
+        :root {
+            --primary: #667eea;
+            --ligth: #f8fafc;
+        }
+        
         .nav-link.active {
             background: var(--ligth);
             color: var(--primary);
@@ -92,18 +95,6 @@
 </head>
 
 <body class="bg-gray-50 font-sans">
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="../index.html" class="logo">
-                <img src="../assets/images/logo-dona.png" alt="Logo" class="logo-img">
-            </a>
-            <ul class="nav-menu">
-                <li><a href="./directory.html" class="nav-link">Directorio</a></li>
-                <li><a href="./dashboard.html" class="nav-link">Estudio</a></li>
-                <li><a href="./info.html" class="nav-link">Información</a></li>
-            </ul>
-        </div>
-    </nav>
     <!-- Loading Screen -->
     <div id="loading" class="fixed inset-0 bg-white flex items-center justify-center z-50">
         <div class="text-center">
@@ -117,8 +108,7 @@
         <div class="text-center p-8">
             <div class="text-red-500 text-6xl mb-4">⚠️</div>
             <h2 class="text-2xl font-bold text-red-700 mb-2">Error al cargar los datos</h2>
-            <p id="error-message" class="text-red-600">No se pudo acceder al archivo 'output.json'. Verifique que esté
-                en la misma carpeta que este archivo.</p>
+            <p id="error-message" class="text-red-600">No se pudo acceder a los datos. Usando datos de muestra.</p>
         </div>
     </div>
 
@@ -129,7 +119,7 @@
             <div class="max-w-7xl mx-auto px-4">
                 <div class="flex justify-between items-center py-4">
                     <div class="flex items-center space-x-4">
-                        <div class="text-2xl font-bold text-gray-800"></div>
+                        <div class="text-2xl font-bold text-gray-800">Dashboard Analítico</div>
                     </div>
                     <div class="hidden md:flex space-x-1">
                         <button class="nav-link px-4 py-2 rounded-lg text-sm font-medium transition-colors active"
@@ -144,8 +134,6 @@
                             onclick="showSection('impact')">Impacto</button>
                         <button class="nav-link px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                             onclick="showSection('barriers')">Barreras</button>
-                        <button class="nav-link px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                            onclick="showSection('data')">Datos</button>
                     </div>
                     <div class="md:hidden">
                         <button id="mobile-menu-btn" class="text-gray-600 hover:text-gray-800">
@@ -177,16 +165,14 @@
             </div>
         </div>
 
-       
-
         <!-- Stats Overview -->
-<div class="bg-white border-b" style="color: var(--primary)">
-    <div class="max-w-7xl mx-auto px-4 py-6">
-        <div id="stats-container" class="grid grid-cols-2 md:grid-cols-5 gap-4" style="color: var(--primary)">
-            <!-- Stats will be populated here -->
+        <div class="bg-white border-b" style="color: var(--primary)">
+            <div class="max-w-7xl mx-auto px-4 py-6">
+                <div id="stats-container" class="grid grid-cols-2 md:grid-cols-5 gap-4" style="color: var(--primary)">
+                    <!-- Stats will be populated here -->
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
         <!-- Filters -->
         <div class="filter-section">
@@ -224,89 +210,76 @@
             <section id="intro" class="section active">
                 <div class="hero-gradient text-white rounded-2xl p-8 mb-8">
                     <div class="max-w-4xl mx-auto text-center">
-                        <h1 class="text-4xl md:text-5xl font-bold mb-6"> Análisis del impacto de las comunidades en Barcelona</h1>
+                        <h1 class="text-4xl md:text-5xl font-bold mb-6">Análisis del impacto de las comunidades en Barcelona</h1>
                         <div class="grid md:grid-cols-3 gap-6 text-center mb-[20px]">
                             <div class="bg-white/10 rounded-xl p-6">
-                                <div class="flex justify-center items-center mb-2">
-                                    <img src="./dashboard/images/2.png" alt="icono" width="50" height="50">
-                                </div>
+                                <div class="text-4xl mb-2">🎯</div>
                                 <h3 class="font-semibold mb-2">Objetivo</h3>
-                                <p class="text-sm opacity-80">Evaluar el impacto de las comunidades de mujeres en
-                                    tecnología en Barcelona</p>
+                                <p class="text-sm opacity-80">Evaluar el impacto de las comunidades de mujeres en tecnología en Barcelona</p>
                             </div>
                             <div class="bg-white/10 rounded-xl p-6">
-                                <div class="flex justify-center items-center mb-2">
-                                    <img src="./dashboard/images/1.png" alt="icono" width="40" height="40">
-                                </div>
+                                <div class="text-4xl mb-2">📊</div>
                                 <h3 class="font-semibold mb-2">Metodología</h3>
-                                <p class="text-sm opacity-80">Encuesta dirigida a profesionales del sector tecnológico
-                                </p>
+                                <p class="text-sm opacity-80">Encuesta dirigida a profesionales del sector tecnológico</p>
                             </div>
-
                             <div class="bg-white/10 rounded-xl p-6">
-                                <div class="flex justify-center items-center mb-2">
-                                    <img src="./dashboard/images/3.png" alt="icono ODS" width="40" height="40">
-                                </div>
+                                <div class="text-4xl mb-2">🌍</div>
                                 <h3 class="font-semibold mb-2">ODS</h3>
                                 <p class="text-sm opacity-80">Contribución a los Objetivos de Desarrollo Sostenible</p>
                             </div>
-
                         </div>
                     </div>
 
                     <div class="grid md:grid-cols-2 gap-8">
-                        <!-- Bloque 1: Contexto del Estudio -->
+                        <!-- Contexto del Estudio -->
                         <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
-                            <div class="flex justify-center items-center mb-4">
-                                <img src="./dashboard/images/10.png" alt="Contexto icono" width="80" height="80">
-                            </div>
+                            <div class="text-4xl text-center mb-4">📋</div>
                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Contexto del Estudio</h2>
                             <p class="text-gray-600 mb-6">
-                                Este dashboard presenta los resultados de una encuesta realizada a profesionales del
-                                sector
-                                tecnológico en Barcelona,
+                                Este dashboard presenta los resultados de una encuesta realizada a profesionales del sector tecnológico en Barcelona,
                                 con el objetivo de analizar el impacto de las comunidades de mujeres en tecnología.
                             </p>
                             <p class="text-gray-600">
-                                Los datos recopilados nos permiten entender mejor cómo estas iniciativas contribuyen a
-                                la inclusión,
+                                Los datos recopilados nos permiten entender mejor cómo estas iniciativas contribuyen a la inclusión,
                                 el desarrollo profesional y la superación de barreras en el sector tecnológico.
                             </p>
                         </div>
 
-                        <!-- Bloque 2: Áreas de Análisis -->
+                        <!-- Áreas de Análisis -->
                         <div class="bg-white rounded-xl p-6 shadow-lg card-hover">
-                            <div class="flex justify-center items-center mb-4">
-                                <img src="./dashboard/images/4.png" alt="Áreas de análisis icono" width="80" height="80">
-                            </div>
+                            <div class="text-4xl text-center mb-4">🔍</div>
                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Áreas de Análisis</h2>
                             <ul class="space-y-3 text-gray-600">
-                                <li class="flex items-center"><span
-                                        class="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>Perfil sociodemográfico de
-                                    las participantes</li>
-                                <li class="flex items-center"><span
-                                        class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>Niveles de participación
-                                    en comunidades</li>
-                                <li class="flex items-center"><span
-                                        class="w-2 h-2 bg-purple-500 rounded-full mr-3"></span>Impacto en la inclusión
-                                    tecnológica</li>
-                                <li class="flex items-center"><span
-                                        class="w-2 h-2 bg-pink-500 rounded-full mr-3"></span>Barreras superadas y
-                                    beneficios obtenidos</li>
-                                <li class="flex items-center"><span
-                                        class="w-2 h-2 bg-orange-500 rounded-full mr-3"></span>Contribución a los ODS
+                                <li class="flex items-center">
+                                    <span class="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+                                    Perfil sociodemográfico de las participantes
+                                </li>
+                                <li class="flex items-center">
+                                    <span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+                                    Niveles de participación en comunidades
+                                </li>
+                                <li class="flex items-center">
+                                    <span class="w-2 h-2 bg-purple-500 rounded-full mr-3"></span>
+                                    Impacto en la inclusión tecnológica
+                                </li>
+                                <li class="flex items-center">
+                                    <span class="w-2 h-2 bg-pink-500 rounded-full mr-3"></span>
+                                    Barreras superadas y beneficios obtenidos
+                                </li>
+                                <li class="flex items-center">
+                                    <span class="w-2 h-2 bg-orange-500 rounded-full mr-3"></span>
+                                    Contribución a los ODS
                                 </li>
                             </ul>
                         </div>
                     </div>
-
+                </div>
             </section>
 
             <!-- Demographics Section -->
             <section id="demographics" class="section">
                 <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4"><img src="./dashboard/images/11.png"
-                            alt="Icono perfil sociodemográfico" width="50" height="50">Perfil Sociodemográfico</h2>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">👥 Perfil Sociodemográfico</h2>
                     <p class="text-gray-600">Características demográficas y profesionales de las participantes</p>
                 </div>
 
@@ -344,9 +317,7 @@
             <!-- Participation Section -->
             <section id="participation" class="section">
                 <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4"><img src="./dashboard/images/5.png"
-                            alt="Icono perfil sociodemográfico" width="80" height="80"> Participación en Comunidades
-                    </h2>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">🤝 Participación en Comunidades</h2>
                     <p class="text-gray-600">Análisis de la participación activa en comunidades tecnológicas</p>
                 </div>
 
@@ -359,7 +330,7 @@
                     </div>
 
                     <div class="bg-white rounded-xl p-6 shadow-lg">
-                        <h3 class="text-xl font-semibold mb-4">Roles Desempeñados (Últimos 24 meses)</h3>
+                        <h3 class="text-xl font-semibold mb-4">Roles Técnicos Desempeñados</h3>
                         <div class="chart-container">
                             <canvas id="roles-chart"></canvas>
                         </div>
@@ -370,9 +341,7 @@
             <!-- Inclusion Section -->
             <section id="inclusion" class="section">
                 <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4"><img src="./dashboard/images/6.png"
-                            alt="Icono perfil sociodemográfico" width="80" height="80"> Inclusión en Entornos
-                        Tecnológicos</h2>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">🌟 Inclusión en Entornos Tecnológicos</h2>
                     <p class="text-gray-600">Evaluación del impacto en la inclusión y pertenencia</p>
                 </div>
 
@@ -396,14 +365,13 @@
             <!-- Impact Section -->
             <section id="impact" class="section">
                 <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4"><img src="./dashboard/images/7.png"
-                            alt="Icono perfil sociodemográfico" width="80" height="80"> Impacto de Iniciativas</h2>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">🚀 Impacto de Iniciativas</h2>
                     <p class="text-gray-600">Análisis del impacto de las iniciativas comunidad-empresa</p>
                 </div>
 
                 <div class="grid lg:grid-cols-2 gap-8">
                     <div class="bg-white rounded-xl p-6 shadow-lg">
-                        <h3 class="text-xl font-semibold mb-4">Beneficios Obtenidos</h3>
+                        <h3 class="text-xl font-semibold mb-4">Actividades Efectivas para Equidad</h3>
                         <div class="chart-container">
                             <canvas id="benefits-chart"></canvas>
                         </div>
@@ -421,8 +389,7 @@
             <!-- Barriers Section -->
             <section id="barriers" class="section">
                 <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4"><img src="./dashboard/images/8.png"
-                            alt="Icono perfil sociodemográfico" width="80" height="80"> Barreras Superadas</h2>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">🛡️ Barreras Superadas</h2>
                     <p class="text-gray-600">Análisis de las barreras que las comunidades han ayudado a superar</p>
                 </div>
 
@@ -430,41 +397,6 @@
                     <h3 class="text-xl font-semibold mb-4">Principales Barreras Superadas</h3>
                     <div class="chart-container">
                         <canvas id="barriers-chart"></canvas>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Data Section
-            <section id="data" class="section">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4"><img src="./dashboard/images/9.png"
-                            alt="Icono perfil sociodemográfico" width="80" height="80"> Datos Detallados</h2>
-                    <p class="text-gray-600">Exploración detallada de las respuestas individuales</p>
-                </div>
-
-                <div class="bg-white rounded-xl p-6 shadow-lg">
-                    <div class="mb-4 flex justify-between items-center">
-                        <h3 class="text-xl font-semibold">Tabla de Respuestas</h3>
-                        <input type="text" id="search-input" placeholder="Buscar..."
-                            class="px-4 py-2 border rounded-lg">
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full table-auto">
-                            <thead>
-                                <tr class="bg-gray-50">
-                                    <th class="px-4 py-2 text-left">Edad</th>
-                                    <th class="px-4 py-2 text-left">Nacionalidad</th>
-                                    <th class="px-4 py-2 text-left">Educación</th>
-                                    <th class="px-4 py-2 text-left">Experiencia</th>
-                                    <th class="px-4 py-2 text-left">Participación</th>
-                                    <th class="px-4 py-2 text-left">Impacto</th>
-                                </tr>
-                            </thead>
-                            <tbody id="data-table-body"> 
-                                <!-- Data will be populated here -->
-                            </tbody>
-                        </table> -->
                     </div>
                 </div>
             </section>
@@ -499,11 +431,11 @@
                 <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400 text-sm">
                     <p>&copy; 2025. Todos los derechos reservados.</p>
                 </div>
+            </div>
         </footer>
     </div>
 
     <script>
-       <script>
         // Global variables
         let allData = [];
         let filteredData = [];
