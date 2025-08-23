@@ -647,21 +647,10 @@
             document.getElementById('app').style.display = 'block';
         }
 
-        function generateStats() {
-            const validResponses = filteredData.length;
-            const avgAge = validResponses > 0 ?
-                Math.round(filteredData.reduce((sum, item) => sum + (item.age || 0), 0) / validResponses) : 0;
-            const barcelonaResidents = filteredData.filter(item => item.resides_in_barcelona === true).length;
-            const activeMembers = filteredData.filter(item => item.is_community_member === true).length;
-            const positiveImpact = filteredData.filter(item =>
-                item.community_inclusion_impact === "Sí" ||
-                item.community_inclusion_impact === "Sí, en parte" ||
-                item.community_inclusion_impact === "En parte"
-            ).length;
-
-            const statsContainer = document.getElementById('stats-container');
-            statsContainer.innerHTML = `
-         <div class="stat-card p-6 rounded-xl text-center">
+         // Helper function to update stats HTML
+        function updateStatsHTML(container, stats) {
+            container.innerHTML = `
+                <div class="stat-card p-6 rounded-xl text-center">
                     <div class="text-3xl font-bold">${stats.validResponses}</div>
                     <div class="text-sm opacity-90">Respuestas Válidas</div>
                 </div>
@@ -680,6 +669,21 @@
                 <div class="stat-card p-6 rounded-xl text-center">
                     <div class="text-3xl font-bold">${stats.positiveImpactPercentage}%</div>
                     <div class="text-sm opacity-90">Con Impacto Positivo</div>
+                </div>
+            `;
+        }
+
+        // Helper function for empty stats
+        function displayEmptyStats() {
+            const statsContainer = document.getElementById('stats-container');
+            if (!statsContainer) return;
+
+            statsContainer.innerHTML = `
+                <div class="col-span-full text-center py-8">
+                    <div class="text-gray-500">
+                        <div class="text-xl font-semibold mb-2">No hay datos disponibles</div>
+                        <div class="text-sm">Verifique los filtros aplicados o la carga de datos</div>
+                    </div>
                 </div>
             `;
         }
